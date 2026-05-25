@@ -682,7 +682,7 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v13</div>
+      <div class="ios-nav-subtitle">{today_label} · v14</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
@@ -808,7 +808,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v13</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v14</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -824,8 +824,6 @@ with col_side:
 
 with col_main:
     if st.session_state.page == "home":
-        st.markdown(f'<div class="header-section"><div class="page-title">{SVG_HOME} Strona Główna</div></div>', unsafe_allow_html=True)
-        
         st.markdown("""
         <div class="content-card">
             <h3>Witaj w szkielecie aplikacji!</h3>
@@ -852,8 +850,6 @@ with col_main:
         
         
     elif st.session_state.page == "form":
-        st.markdown(f'<div class="header-section"><div class="page-title">{SVG_ADD_DATA} Formularz</div></div>', unsafe_allow_html=True)
-        
         col_a, col_b = st.columns(2)
         with col_a:
             selected = st.selectbox("Wybierz opcję", SAMPLE_ITEMS, key="selected_item")
@@ -873,7 +869,6 @@ with col_main:
                 st.success("Przykładowy zapis — dane do podpięcia w przyszłości.")
         
     elif st.session_state.page == "settings":
-        st.markdown(f'<div class="header-section"><div class="page-title">{SVG_SETTINGS} Ustawienia</div></div>', unsafe_allow_html=True)
         st.markdown("""
         <div class="content-card">
             <h3>Konfiguracja szkieletu</h3>
