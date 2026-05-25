@@ -682,7 +682,7 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v12</div>
+      <div class="ios-nav-subtitle">{today_label} · v13</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
@@ -808,7 +808,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v12</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v13</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -886,36 +886,57 @@ with col_main:
 # 7. JS BRIDGE — sendActionToStreamlit + obsługa menu mobilnego
 # ══════════════════════════════════════════════════════════════════════════════
 st.components.v1.html("""<script>
-window.parent.sendActionToStreamlit = function(s) {
-    var i = window.parent.document.querySelector('input[aria-label="js_data_exchange"]');
-    if (i) {
-        var setter = Object.getOwnPropertyDescriptor(window.parent.HTMLInputElement.prototype, 'value').set;
-        setter.call(i, s + '&ts=' + Date.now());
-        i.dispatchEvent(new window.parent.Event('input', { bubbles: true }));
-    }
-};
-
-// Globalny handler kliknięć — szuka data-action na elemencie lub rodzicach
-window.parent.trainerClickHandler = (e) => {
-    const doc = window.parent.document;
-    let el = e.target;
-    while (el && el !== doc.body) {
-        if (el.hasAttribute && el.hasAttribute('data-action')) {
-            e.preventDefault();
-            e.stopPropagation();
-            let actionStr = el.getAttribute('data-action');
-            if (window.parent.sendActionToStreamlit) {
-                window.parent.sendActionToStreamlit(actionStr);
-            }
-            return;
-        }
-        el = el.parentElement;
-    }
-};
 (function() {
-    const doc = window.parent.document;
-    doc.body.removeEventListener('click', window.parent.trainerClickHandler);
-    doc.body.addEventListener('click', window.parent.trainerClickHandler);
+    var pdoc = document;
+    try {
+        if (window.parent && window.parent.document) {
+            pdoc = window.parent.document;
+        }
+    } catch(e) {}
+    var pwin = window.parent;
+
+    pwin.sendActionToStreamlit = function(s) {
+        var i = pdoc.querySelector('input[aria-label="js_data_exchange"]');
+        if (i) {
+            i.focus();
+            var setter = Object.getOwnPropertyDescriptor(pwin.HTMLInputElement.prototype, 'value').set;
+            setter.call(i, s + '&ts=' + Date.now());
+            i.dispatchEvent(new pwin.Event('input', { bubbles: true }));
+            i.dispatchEvent(new pwin.Event('change', { bubbles: true }));
+            i.blur();
+        }
+    };
+
+    pwin.trainerClickHandler = function(e) {
+        var el = e.target;
+        while (el && el !== pdoc.body) {
+            if (el.hasAttribute && el.hasAttribute('data-action')) {
+                e.preventDefault();
+                e.stopPropagation();
+                var actionStr = el.getAttribute('data-action');
+                if (pwin.sendActionToStreamlit) {
+                    pwin.sendActionToStreamlit(actionStr);
+                }
+                return;
+            }
+            el = el.parentElement;
+        }
+    };
+
+    function attachListeners() {
+        if (!pdoc.body) return;
+        pdoc.body.removeEventListener('click', pwin.trainerClickHandler);
+        pdoc.body.addEventListener('click', pwin.trainerClickHandler);
+        pdoc.body.setAttribute('data-bridge-v4', 'true');
+    }
+
+    if (pdoc.readyState === 'complete' || pdoc.readyState === 'interactive') {
+        attachListeners();
+    } else {
+        pdoc.addEventListener('DOMContentLoaded', attachListeners);
+    }
+    setTimeout(attachListeners, 500);
+    setTimeout(attachListeners, 2000);
 })();
 </script>""", height=0)
 
