@@ -843,40 +843,34 @@ st.components.v1.html("""
     var docs = [];
     try { docs.push(window.top.document); } catch(e) {}
     try { docs.push(window.parent.document); } catch(e) {}
-    try { docs.push(window.document); } catch(e) {}
     
-    var hideStreamlit = function() {
+    // Inject CSS into top document for persistent hiding
+    try {
+        var tdoc = window.top.document;
+        var style = tdoc.createElement('style');
+        style.textContent = 'footer,#MainMenu,[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],[data-testid="stFooter"],[data-testid="stSidebarNav"],.stDeployButton,[data-testid="stActionButton"],a[href*="streamlit.io/cloud"],a[href*="streamlit.io"]{display:none!important}';
+        tdoc.head.appendChild(style);
+    } catch(e) {}
+    
+    // Also poll and hide via JS
+    setInterval(function() {
         docs.forEach(function(d) {
             try {
-                // Hide by known Streamlit selectors
                 [
-                    'footer', '#MainMenu', '[data-testid="stToolbar"]',
-                    '[data-testid="stDecoration"]', '[data-testid="stStatusWidget"]',
-                    '[data-testid="stFooter"]', '[data-testid="stSidebarNav"]',
-                    '.stDeployButton', '[data-testid="stActionButton"]',
-                    '[data-testid="stSidebar"]', 'header[data-testid="stHeader"]',
+                    'footer', '#MainMenu',
+                    '[data-testid="stToolbar"]', '[data-testid="stDecoration"]',
+                    '[data-testid="stStatusWidget"]', '[data-testid="stFooter"]',
+                    '[data-testid="stSidebarNav"]', '.stDeployButton',
+                    '[data-testid="stActionButton"]', 'header[data-testid="stHeader"]',
                     'a[href*="streamlit.io/cloud"]', 'a[href*="streamlit.io"]'
                 ].forEach(function(sel) {
                     d.querySelectorAll(sel).forEach(function(el) {
                         el.style.setProperty('display', 'none', 'important');
                     });
                 });
-                // Find any element with "Streamlit" or "Hosted" or "Made with" text
-                d.querySelectorAll('div, a, span, small, p').forEach(function(el) {
-                    var t = (el.innerText || el.textContent || '').trim();
-                    if (t.indexOf('Streamlit') >= 0 || t.indexOf('Hosted with') >= 0 || t.indexOf('Made with') >= 0) {
-                        var p = el;
-                        while (p && p !== d.body && p !== d.documentElement) {
-                            p.style.setProperty('display', 'none', 'important');
-                            p = p.parentElement;
-                        }
-                    }
-                });
             } catch(e) {}
         });
-    };
-    hideStreamlit();
-    setInterval(hideStreamlit, 1000);
+    }, 3000);
 })();
 </script>
 """, height=0)
