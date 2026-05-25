@@ -630,7 +630,20 @@ if "selected_category" not in st.session_state:
 # 5. ACTION PROCESSOR
 # ══════════════════════════════════════════════════════════════════════════════
 
-# Hidden text input representing the communications bridge from JS to Python
+# Obsługa nawigacji przez query params (dla linków w iOS barze)
+qp = st.query_params
+if qp.get("menu") == "toggle":
+    st.session_state.mobile_menu = not st.session_state.mobile_menu
+    st.query_params.clear()
+    st.rerun()
+for pg in ["home", "form", "settings"]:
+    if qp.get("nav") == pg:
+        st.session_state.page = pg
+        st.session_state.mobile_menu = False
+        st.query_params.clear()
+        st.rerun()
+
+# Hidden text input dla JS bridge (tylko sendActionToStreamlit)
 js_data = st.text_input("js_data_exchange", key="js_data_input", label_visibility="collapsed")
 
 if js_data and js_data != st.session_state.last_js_data:
@@ -666,30 +679,28 @@ ios_hbg_open = "open" if st.session_state.mobile_menu else ""
 st.markdown(f"""
 <div class="ios-top-bar-wrapper">
   <div class="ios-nav-bar">
-    <div class="ios-nav-center" style="padding-left:0;">
+    <div class="ios-hamburger {ios_hbg_open}">
+      <a href="?menu=toggle" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;text-decoration:none;">
+      <span class="hbr"></span><span class="hbr"></span><span class="hbr"></span>
+      </a>
+    </div>
+    <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v5</div>
+      <div class="ios-nav-subtitle">{today_label} · v6</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Hamburger mobilny
+# Rozwijane menu mobilne
 st.markdown("""
 <style>
 @media (min-width: 1001px) {
-    .st-key-btn_hamburger { display: none !important; }
     .st-key-mob_home, .st-key-mob_form, .st-key-mob_settings { display: none !important; }
 }
 </style>
 """, unsafe_allow_html=True)
-col_hbg = st.columns([1, 5])[0]
-with col_hbg:
-    if st.button("✕" if st.session_state.mobile_menu else "☰", key="btn_hamburger"):
-        st.session_state.mobile_menu = not st.session_state.mobile_menu; st.rerun()
-
-# Rozwijane menu mobilne
 if st.session_state.mobile_menu:
     col_m1, col_m2, col_m3 = st.columns(3)
     with col_m1:
@@ -723,7 +734,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v5</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v6</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
