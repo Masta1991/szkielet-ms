@@ -680,7 +680,7 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v8</div>
+      <div class="ios-nav-subtitle">{today_label} · v9</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
@@ -691,6 +691,13 @@ st.markdown(f"""
 st.markdown("""
 <style>
 /* Ukryj domyślny wygląd przycisku hamburgera */
+.st-key-btn_hamburger,
+.st-key-btn_hamburger > div,
+.st-key-btn_hamburger > div > div {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
 .st-key-btn_hamburger {
     position: fixed !important;
     top: 0 !important;
@@ -700,10 +707,6 @@ st.markdown("""
     height: calc(56px + env(safe-area-inset-top, 0px)) !important;
     margin: 0 !important;
     padding: 0 !important;
-    pointer-events: none !important;
-}
-.st-key-btn_hamburger > div {
-    pointer-events: auto !important;
 }
 .st-key-btn_hamburger button {
     background: transparent !important;
@@ -853,7 +856,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v8</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v9</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
