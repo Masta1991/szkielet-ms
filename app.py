@@ -717,11 +717,32 @@ bottom_items = "".join(
 )
 st.markdown(f'<div class="ios-bottom-bar-wrapper">{bottom_items}</div>', unsafe_allow_html=True)
 
-# ══════════════════════════════════════════════════════════════════════════════
-# PAGE ROUTING
-# ══════════════════════════════════════════════════════════════════════════════
+# ── Desktop Layout (sidebar + content) ──
+col_side, col_main = st.columns([1, 4])
 
-if st.session_state.page == "home":
+with col_side:
+    st.markdown(f"""
+    <div class="desktop-only">
+    <div class="control-panel-card">
+        <div>
+            <div class="tile-label">PANEL DOWODZENIA</div>
+            <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v2</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    tiles = [("START","Strona Główna","Widok startowy",SVG_HOME,"home"),
+             ("DANE","Formularz","Przykładowy formularz",SVG_ADD_DATA,"form"),
+             ("KONFIGURACJA","Ustawienia","Konfiguracja szkieletu",SVG_SETTINGS,"settings")]
+    tiles_html = ""
+    for label, title, desc, svg, pg in tiles:
+        active = "border-color:#006089;background:#f0f7fa;" if st.session_state.page==pg else ""
+        tiles_html += f'<div class="tile-link" style="{active}"><div class="tile-bg-icon-container">{svg}</div><div class="tile-content"><div class="tile-label">{label}</div><div class="tile-title">{title}</div><div class="tile-desc">{desc}</div></div></div>'
+    st.markdown(tiles_html + "</div>", unsafe_allow_html=True)
+
+with col_main:
+    if st.session_state.page == "home":
         st.markdown(f'<div class="header-section"><div class="page-title">{SVG_HOME} Strona Główna</div></div>', unsafe_allow_html=True)
         
         st.markdown("""
@@ -749,7 +770,7 @@ if st.session_state.page == "home":
         """, unsafe_allow_html=True)
         
         
-elif st.session_state.page == "form":
+    elif st.session_state.page == "form":
         st.markdown(f'<div class="header-section"><div class="page-title">{SVG_ADD_DATA} Formularz</div></div>', unsafe_allow_html=True)
         
         col_a, col_b = st.columns(2)
@@ -770,7 +791,7 @@ elif st.session_state.page == "form":
             if st.button("ZAPISZ", key="btn_save", type="primary", use_container_width=True):
                 st.success("Przykładowy zapis — dane do podpięcia w przyszłości.")
         
-elif st.session_state.page == "settings":
+    elif st.session_state.page == "settings":
         st.markdown(f'<div class="header-section"><div class="page-title">{SVG_SETTINGS} Ustawienia</div></div>', unsafe_allow_html=True)
         st.markdown("""
         <div class="content-card">
