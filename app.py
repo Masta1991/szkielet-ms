@@ -680,7 +680,7 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v7</div>
+      <div class="ios-nav-subtitle">{today_label} · v8</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
@@ -700,6 +700,10 @@ st.markdown("""
     height: calc(56px + env(safe-area-inset-top, 0px)) !important;
     margin: 0 !important;
     padding: 0 !important;
+    pointer-events: none !important;
+}
+.st-key-btn_hamburger > div {
+    pointer-events: auto !important;
 }
 .st-key-btn_hamburger button {
     background: transparent !important;
@@ -712,12 +716,19 @@ st.markdown("""
     cursor: pointer !important;
     color: transparent !important;
     font-size: 0 !important;
+    outline: none !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    border-radius: 0 !important;
+    -webkit-tap-highlight-color: transparent !important;
 }
-.st-key-btn_hamburger button:hover {
-    background: rgba(0, 96, 137, 0.05) !important;
-}
-.st-key-btn_hamburger button:active {
-    background: rgba(0, 96, 137, 0.1) !important;
+.st-key-btn_hamburger button:hover,
+.st-key-btn_hamburger button:active,
+.st-key-btn_hamburger button:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 .st-key-btn_hamburger button p {
     display: none !important;
@@ -842,7 +853,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v7</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v8</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
