@@ -248,7 +248,7 @@ def inject_custom_css():
     [data-testid="stActionButton"] { display: none !important; }
 
     .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: calc(1.5rem - 120px) !important;
         max-width: 98% !important;
         padding-bottom: 5rem !important;
     }
@@ -558,7 +558,7 @@ def inject_custom_css():
         .mobile-only { display: block !important; }
 
         .block-container {
-            padding-top: calc(56px + env(safe-area-inset-top, 0px)) !important;
+            padding-top: calc(56px + env(safe-area-inset-top, 0px) - 120px) !important;
             padding-left: 10px !important;
             padding-right: 10px !important;
         }
@@ -682,7 +682,7 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v14</div>
+      <div class="ios-nav-subtitle">{today_label} · v15</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
@@ -808,7 +808,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v14</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v15</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
