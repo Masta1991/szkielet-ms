@@ -793,7 +793,6 @@ window.parent.sendActionToStreamlit = function(s) {
     }
 };
 </script>""", height=0)
-""", height=0)
 
 # Agresywne ukrywanie elementów Streamlit (Made with, toolbar, itp.)
 hide_html = ("""
