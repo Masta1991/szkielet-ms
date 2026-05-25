@@ -836,47 +836,47 @@ doc.body.setAttribute('data-bridge-active', 'true');
 </script>
 """, height=0)
 
-# Agresywne ukrywanie elementów Streamlit (Made with, toolbar, etc.)
+# Agresywne ukrywanie elementów Streamlit (Made with, toolbar, itp.)
 st.components.v1.html("""
 <script>
 (function() {
-    var pdoc = window.parent.document;
-    if (!pdoc) return;
+    var docs = [];
+    try { docs.push(window.top.document); } catch(e) {}
+    try { docs.push(window.parent.document); } catch(e) {}
+    try { docs.push(window.document); } catch(e) {}
+    
     var hideStreamlit = function() {
-        var selectors = [
-            'footer', '#MainMenu', '[data-testid="stToolbar"]',
-            '[data-testid="stDecoration"]', '[data-testid="stStatusWidget"]',
-            '[data-testid="stFooter"]', '[data-testid="stSidebarNav"]',
-            '.stDeployButton', '[data-testid="stActionButton"]',
-            'a[href*="streamlit.io/cloud"]'
-        ];
-        selectors.forEach(function(sel) {
+        docs.forEach(function(d) {
             try {
-                pdoc.querySelectorAll(sel).forEach(function(el) {
-                    el.style.setProperty('display', 'none', 'important');
-                    el.style.setProperty('visibility', 'hidden', 'important');
-                    el.style.setProperty('height', '0px', 'important');
-                    el.style.setProperty('width', '0px', 'important');
-                    el.style.setProperty('opacity', '0', 'important');
+                // Hide by known Streamlit selectors
+                [
+                    'footer', '#MainMenu', '[data-testid="stToolbar"]',
+                    '[data-testid="stDecoration"]', '[data-testid="stStatusWidget"]',
+                    '[data-testid="stFooter"]', '[data-testid="stSidebarNav"]',
+                    '.stDeployButton', '[data-testid="stActionButton"]',
+                    '[data-testid="stSidebar"]', 'header[data-testid="stHeader"]',
+                    'a[href*="streamlit.io/cloud"]', 'a[href*="streamlit.io"]'
+                ].forEach(function(sel) {
+                    d.querySelectorAll(sel).forEach(function(el) {
+                        el.style.setProperty('display', 'none', 'important');
+                    });
+                });
+                // Find any element with "Streamlit" or "Hosted" or "Made with" text
+                d.querySelectorAll('div, a, span, small, p').forEach(function(el) {
+                    var t = (el.innerText || el.textContent || '').trim();
+                    if (t.indexOf('Streamlit') >= 0 || t.indexOf('Hosted with') >= 0 || t.indexOf('Made with') >= 0) {
+                        var p = el;
+                        while (p && p !== d.body && p !== d.documentElement) {
+                            p.style.setProperty('display', 'none', 'important');
+                            p = p.parentElement;
+                        }
+                    }
                 });
             } catch(e) {}
         });
-        // Walk through all divs to find "Hosted with" text
-        try {
-            pdoc.querySelectorAll('div, a, span').forEach(function(el) {
-                var txt = (el.innerText || el.textContent || '').trim();
-                if (txt.indexOf('Hosted with') >= 0 || txt.indexOf('Made with') >= 0) {
-                    var p = el;
-                    while (p) {
-                        p.style.setProperty('display', 'none', 'important');
-                        p = p.parentElement;
-                    }
-                }
-            });
-        } catch(e) {}
     };
     hideStreamlit();
-    setInterval(hideStreamlit, 2000);
+    setInterval(hideStreamlit, 1000);
 })();
 </script>
 """, height=0)
