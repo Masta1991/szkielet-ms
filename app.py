@@ -404,7 +404,6 @@ def inject_custom_css():
         flex-shrink: 0;
         transition: background 0.2s ease;
         border: 1px solid rgba(0,0,0,0.06);
-        pointer-events: none;
     }
     .ios-hamburger:active { background: rgba(0, 96, 137, 0.1); }
     .ios-hamburger span {
@@ -681,68 +680,16 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v10</div>
+      <div class="ios-nav-subtitle">{today_label} · v11</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Hamburger button (niewidzialny, nałożony na iOS bar przez CSS)
+# Animowane menu mobilne
 st.markdown("""
 <style>
-/* Ukryj domyślny wygląd przycisku hamburgera */
-.st-key-btn_hamburger,
-.st-key-btn_hamburger > div,
-.st-key-btn_hamburger > div > div {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-.st-key-btn_hamburger {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 10001 !important;
-    width: 50px !important;
-    height: calc(56px + env(safe-area-inset-top, 0px)) !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-.st-key-btn_hamburger button {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    cursor: pointer !important;
-    color: transparent !important;
-    font-size: 0 !important;
-    outline: none !important;
-    min-height: 0 !important;
-    min-width: 0 !important;
-    border-radius: 0 !important;
-    -webkit-tap-highlight-color: transparent !important;
-}
-.st-key-btn_hamburger button:hover,
-.st-key-btn_hamburger button:active,
-.st-key-btn_hamburger button:focus {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-.st-key-btn_hamburger button p {
-    display: none !important;
-}
-/* Na desktopie ukryj hamburger i mobilne elementy */
-@media (min-width: 1001px) {
-    .st-key-btn_hamburger { display: none !important; }
-    .mobile-menu-dropdown { display: none !important; }
-}
-/* Animowane menu mobilne */
 .mobile-menu-dropdown {
     position: fixed !important;
     top: calc(56px + env(safe-area-inset-top, 0px)) !important;
@@ -817,12 +764,14 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Niewidzialny przycisk hamburgera
-if st.button("toggle_hamburger", key="btn_hamburger"):
-    st.session_state.mobile_menu = not st.session_state.mobile_menu
-    st.rerun()
-
 # Animowane menu mobilne
+st.markdown("""
+<style>
+@media (min-width: 1001px) {
+    .mobile-menu-dropdown { display: none !important; }
+}
+</style>
+""", unsafe_allow_html=True)
 menu_class = "mobile-menu-dropdown show" if st.session_state.mobile_menu else "mobile-menu-dropdown"
 menu_items = [
     ("home", "Strona Główna", SVG_HOME),
@@ -857,7 +806,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v10</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v11</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -944,10 +893,21 @@ window.parent.sendActionToStreamlit = function(s) {
     }
 };
 
-// Obsługa kliknięć w elementy menu mobilnego
+// Obsługa kliknięć w elementy menu mobilnego i hamburger
 (function() {
     var pdoc = window.parent.document;
     function attachMenuHandlers() {
+        // Hamburger button
+        var hamburger = pdoc.querySelector('#hamburger-btn');
+        if (hamburger && !hamburger.dataset.listenerAttached) {
+            hamburger.dataset.listenerAttached = '1';
+            hamburger.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.parent.sendActionToStreamlit('action=toggle_menu');
+            });
+            hamburger.style.cursor = 'pointer';
+        }
+        // Menu items
         var items = pdoc.querySelectorAll('.mobile-menu-item');
         items.forEach(function(item) {
             if (!item.dataset.listenerAttached) {
