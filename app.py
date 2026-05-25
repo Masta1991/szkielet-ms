@@ -69,47 +69,87 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Wstrzyknięcie ikony jako data URI — to zawsze pokaże właściwą ikonę, niezależnie od cache
+# ── Wstrzykiwanie PWA tagów do GŁÓWNEGO dokumentu (parent) przez JS ──
+# To jest niezbędne na Streamlit Cloud, gdzie nie ma dostępu do plików instalacyjnych Streamlita.
+# Wszystko (ikona, manifest, meta) idzie przez JS do parent.document.head.
+
+PWA_MANIFEST = {
+    "name": "Szkielet MS",
+    "short_name": "Szkielet",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#F2F7FA",
+    "theme_color": "#006089",
+    "icons": [
+        {"src": f"data:image/png;base64,{ICON_B64}", "sizes": "192x192", "type": "image/png"},
+        {"src": f"data:image/png;base64,{ICON_B64}", "sizes": "512x512", "type": "image/png"}
+    ]
+}
+
+PWA_MANIFEST_JSON = json.dumps(PWA_MANIFEST)
+
+PWA_SW_JS = """self.addEventListener('install', (e) => { e.waitUntil(self.skipWaiting()); });
+self.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });
+self.addEventListener('fetch', (e) => {
+  e.respondWith(fetch(e.request).catch(() => new Response('', { status: 408 })));
+});"""
+
 st.components.v1.html(f"""
 <script>
-  const setFavicon = (href) => {{
-    let link = document.querySelector('link[rel*="icon"]');
-    if (!link) {{
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.head.appendChild(link);
-    }}
-    link.href = href;
-  }};
-  setFavicon('data:image/png;base64,{ICON_B64}');
+(function() {{
+    var pdoc = window.parent.document;
+    if (!pdoc) return;
+    
+    var iconB64 = 'data:image/png;base64,{ICON_B64}';
+    
+    // --- Meta tags ---
+    var metas = [
+        ['apple-mobile-web-app-capable', 'yes'],
+        ['apple-mobile-web-app-status-bar-style', 'default'],
+        ['mobile-web-app-capable', 'yes'],
+        ['apple-mobile-web-app-title', 'Szkielet MS'],
+        ['theme-color', '#006089']
+    ];
+    metas.forEach(function(m) {{
+        var el = pdoc.querySelector('meta[name="' + m[0] + '"]');
+        if (!el) {{ el = pdoc.createElement('meta'); el.name = m[0]; pdoc.head.appendChild(el); }}
+        el.content = m[1];
+    }});
+    
+    // --- Apple touch icons ---
+    var setLink = function(rel, href, extra) {{
+        var el = pdoc.querySelector('link[rel="' + rel + '"]');
+        if (!el) {{ el = pdoc.createElement('link'); el.rel = rel; pdoc.head.appendChild(el); }}
+        el.href = href;
+        if (extra) {{ for (var k in extra) el.setAttribute(k, extra[k]); }}
+    }};
+    setLink('apple-touch-icon', iconB64);
+    setLink('apple-touch-icon-precomposed', iconB64);
+    setLink('icon', iconB64, {{type:'image/png'}});
+    setLink('shortcut icon', iconB64, {{type:'image/png'}});
+    
+    // --- Manifest as Blob URL ---
+    var manifestJson = '{PWA_MANIFEST_JSON}';
+    var blob = new Blob([manifestJson], {{type: 'application/json'}});
+    var manifestUrl = URL.createObjectURL(blob);
+    setLink('manifest', manifestUrl);
+    
+    // --- Service Worker (tylko jeśli /sw.js istnieje) ---
+    fetch('/sw.js').then(function(r) {{
+        if (r.ok && 'serviceWorker' in navigator) {{
+            navigator.serviceWorker.register('/sw.js');
+        }}
+    }}).catch(function(){{}});
+}})();
 </script>
 """, height=0)
 
-# Dynamic PWA route injection (działa gdy serwer jest gotowy — zwykle od 2-go uruchomienia)
+# Dynamiczne wstrzyknięcie SW i manifestu jako trasy Starlette (działa po rozgrzaniu serwera)
 def inject_pwa_routes():
     try:
         import gc
         from streamlit.web.server.server import Server
         from starlette.responses import Response
-
-        sw_js = """self.addEventListener('install', () => { self.skipWaiting(); });
-self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
-self.addEventListener('fetch', (e) => {
-  if (e.request.url.includes('manifest.json')) return;
-  e.respondWith(fetch(e.request).catch(() => new Response('', { status: 408 })));
-});"""
-        manifest = {
-            "name": "Szkielet MS",
-            "short_name": "Szkielet",
-            "start_url": ".",
-            "display": "standalone",
-            "background_color": "#F2F7FA",
-            "theme_color": "#006089",
-            "icons": [
-                {"src": f"data:image/png;base64,{ICON_B64}", "sizes": "192x192", "type": "image/png"},
-                {"src": f"data:image/png;base64,{ICON_B64}", "sizes": "512x512", "type": "image/png"}
-            ]
-        }
 
         servers = [obj for obj in gc.get_objects() if isinstance(obj, Server)]
         if not servers:
@@ -124,8 +164,8 @@ self.addEventListener('fetch', (e) => {
         if hasattr(app, "routes"):
             existing = [r.path for r in app.routes if hasattr(r, "path")]
             for route_path, content_type, content in [
-                ("/sw.js", "application/javascript", sw_js),
-                ("/manifest.json", "application/json", json.dumps(manifest)),
+                ("/sw.js", "application/javascript", PWA_SW_JS),
+                ("/manifest.json", "application/json", json.dumps(PWA_MANIFEST)),
                 ("/favicon.png", "image/png", icon_bytes),
                 ("/favicon.ico", "image/x-icon", icon_bytes),
                 ("/apple-touch-icon.png", "image/png", icon_bytes),
