@@ -262,10 +262,12 @@ def inject_custom_css():
 
     div[data-testid="stTextInput"]:has(input[aria-label="js_data_exchange"]),
     div[data-testid="stTextInput"]:has(input[id*="js_data_input"]) {
-        position: absolute !important;
-        left: -9999px !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
         opacity: 0 !important;
-        pointer-events: none !important;
+        overflow: hidden !important;
     }
 
     .main-layout {
@@ -675,12 +677,12 @@ ios_hbg_open = "open" if st.session_state.mobile_menu else ""
 st.markdown(f"""
 <div class="ios-top-bar-wrapper">
   <div class="ios-nav-bar">
-    <div class="ios-hamburger {ios_hbg_open}" id="hamburger-btn">
+    <div class="ios-hamburger {ios_hbg_open}" data-action="action=toggle_menu">
       <span class="hbr"></span><span class="hbr"></span><span class="hbr"></span>
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v11</div>
+      <div class="ios-nav-subtitle">{today_label} · v12</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
@@ -781,7 +783,7 @@ menu_items = [
 menu_html = f'<div class="{menu_class}" id="mobile-menu">'
 for pg, label, svg in menu_items:
     active_class = "active" if st.session_state.page == pg else ""
-    menu_html += f'<div class="mobile-menu-item {active_class}" data-page="{pg}"><span class="mobile-menu-item-icon">{svg}</span>{label}<span class="mobile-menu-item-arrow">›</span></div>'
+    menu_html += f'<div class="mobile-menu-item {active_class}" data-action="action=nav&page={pg}"><span class="mobile-menu-item-icon">{svg}</span>{label}<span class="mobile-menu-item-arrow">›</span></div>'
 menu_html += '</div>'
 st.markdown(menu_html, unsafe_allow_html=True)
 
@@ -806,7 +808,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v11</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v12</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -814,7 +816,7 @@ with col_side:
     tiles = [("START","Strona Główna","Widok startowy",SVG_HOME,"home"),
              ("DANE","Formularz","Przykładowy formularz",SVG_ADD_DATA,"form"),
              ("KONFIGURACJA","Ustawienia","Konfiguracja szkieletu",SVG_SETTINGS,"settings")]
-    tiles_html = ""
+    tiles_html = '<div class="desktop-only">'
     for label, title, desc, svg, pg in tiles:
         active = "border-color:#006089;background:#f0f7fa;" if st.session_state.page==pg else ""
         tiles_html += f'<div class="tile-link" style="{active}"><div class="tile-bg-icon-container">{svg}</div><div class="tile-content"><div class="tile-label">{label}</div><div class="tile-title">{title}</div><div class="tile-desc">{desc}</div></div></div>'
@@ -893,37 +895,27 @@ window.parent.sendActionToStreamlit = function(s) {
     }
 };
 
-// Obsługa kliknięć w elementy menu mobilnego i hamburger
-(function() {
-    var pdoc = window.parent.document;
-    function attachMenuHandlers() {
-        // Hamburger button
-        var hamburger = pdoc.querySelector('#hamburger-btn');
-        if (hamburger && !hamburger.dataset.listenerAttached) {
-            hamburger.dataset.listenerAttached = '1';
-            hamburger.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.parent.sendActionToStreamlit('action=toggle_menu');
-            });
-            hamburger.style.cursor = 'pointer';
-        }
-        // Menu items
-        var items = pdoc.querySelectorAll('.mobile-menu-item');
-        items.forEach(function(item) {
-            if (!item.dataset.listenerAttached) {
-                item.dataset.listenerAttached = '1';
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    var pg = item.getAttribute('data-page');
-                    if (pg) {
-                        window.parent.sendActionToStreamlit('action=nav&page=' + pg);
-                    }
-                });
+// Globalny handler kliknięć — szuka data-action na elemencie lub rodzicach
+window.parent.trainerClickHandler = (e) => {
+    const doc = window.parent.document;
+    let el = e.target;
+    while (el && el !== doc.body) {
+        if (el.hasAttribute && el.hasAttribute('data-action')) {
+            e.preventDefault();
+            e.stopPropagation();
+            let actionStr = el.getAttribute('data-action');
+            if (window.parent.sendActionToStreamlit) {
+                window.parent.sendActionToStreamlit(actionStr);
             }
-        });
+            return;
+        }
+        el = el.parentElement;
     }
-    attachMenuHandlers();
-    setInterval(attachMenuHandlers, 1000);
+};
+(function() {
+    const doc = window.parent.document;
+    doc.body.removeEventListener('click', window.parent.trainerClickHandler);
+    doc.body.addEventListener('click', window.parent.trainerClickHandler);
 })();
 </script>""", height=0)
 
