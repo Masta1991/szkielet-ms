@@ -69,6 +69,17 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Wstrzyknięcie meta/link tagów PWA przez st.markdown (wykrywane przez mobilne Safari)
+st.markdown(f"""
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Szkielet MS">
+    <meta name="theme-color" content="#006089">
+    <link rel="apple-touch-icon" href="data:image/png;base64,{ICON_B64}">
+    <link rel="apple-touch-icon-precomposed" href="data:image/png;base64,{ICON_B64}">
+""", unsafe_allow_html=True)
+
 # ── Wstrzykiwanie PWA tagów do GŁÓWNEGO dokumentu (parent) przez JS ──
 # To jest niezbędne na Streamlit Cloud, gdzie nie ma dostępu do plików instalacyjnych Streamlita.
 # Wszystko (ikona, manifest, meta) idzie przez JS do parent.document.head.
@@ -199,6 +210,13 @@ def inject_custom_css():
     [data-testid="stSidebar"] { display: none; }
     header { visibility: hidden; height: 0px !important; }
     footer { display: none !important; visibility: hidden !important; }
+    #MainMenu { display: none !important; }
+    [data-testid="stToolbar"] { display: none !important; }
+    [data-testid="stDecoration"] { display: none !important; }
+    [data-testid="stStatusWidget"] { display: none !important; }
+    [data-testid="stFooter"] { display: none !important; }
+    .stDeployButton { display: none !important; }
+    [data-testid="stAppViewContainer"] > div:last-child { display: none !important; }
 
     .block-container {
         padding-top: 1.5rem !important;
@@ -811,5 +829,32 @@ window.parent.trainerClickHandlerBound = true;
 
 // Diagnostic flag
 doc.body.setAttribute('data-bridge-active', 'true');
+</script>
+""", height=0)
+
+# Agresywne ukrywanie elementów Streamlit (Made with, toolbar, etc.)
+st.components.v1.html("""
+<script>
+(function() {
+    var pdoc = window.parent.document;
+    if (!pdoc) return;
+    var hideStreamlit = function() {
+        var selectors = [
+            'footer', '#MainMenu', '[data-testid="stToolbar"]',
+            '[data-testid="stDecoration"]', '[data-testid="stStatusWidget"]',
+            '[data-testid="stFooter"]', '.stDeployButton',
+            '[data-testid="stSidebarNav"]', '[data-testid="StyledAppLink"]'
+        ];
+        selectors.forEach(function(sel) {
+            try {
+                pdoc.querySelectorAll(sel).forEach(function(el) {
+                    el.style.setProperty('display', 'none', 'important');
+                });
+            } catch(e) {}
+        });
+    };
+    hideStreamlit();
+    setInterval(hideStreamlit, 2000);
+})();
 </script>
 """, height=0)
