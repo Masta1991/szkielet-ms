@@ -24,42 +24,61 @@ SVG_DAY = """<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColo
 SVG_WEEK = """<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>"""
 
 def generate_ms_icon(path):
-    """Generates a high-quality 192x192 PNG icon with initials 'MS' if not present."""
+# ══════════════════════════════════════════════════════════════════════════════
+# 2. PWA SETUP & FAVICON
+# ══════════════════════════════════════════════════════════════════════════════
+
+ICON_DIR = os.path.join(BASE_DIR, "App Icon")
+if not os.path.exists(ICON_DIR):
+    os.makedirs(ICON_DIR, exist_ok=True)
+
+icon_src = os.path.join(ICON_DIR, "icon_192.png")
+icon_512_path = os.path.join(ICON_DIR, "icon_512.png")
+icon_fav_path = os.path.join(BASE_DIR, "zdjecia", "icon.png")
+
+# If icon_192.png exists, use it; otherwise generate a fallback MS icon
+if not os.path.exists(icon_src):
     try:
         from PIL import Image, ImageDraw, ImageFont
-        img = Image.new('RGB', (192, 192), color='#F2F7FA')
+        img = Image.new('RGBA', (192, 192), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
-        draw.ellipse([8, 8, 184, 184], outline='#006089', width=5)
-        text = "MS"
+        draw.ellipse([8, 8, 184, 184], outline='#006089', width=6)
         try:
             font = ImageFont.truetype("arial.ttf", 75)
         except IOError:
             font = ImageFont.load_default()
         try:
-            left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
+            left, top, right, bottom = draw.textbbox((0, 0), "MS", font=font)
             w = right - left; h = bottom - top
         except AttributeError:
-            w, h = draw.textsize(text, font=font)
+            w, h = draw.textsize("MS", font=font)
         x = (192 - w) // 2; y = (192 - h) // 2 - 5
-        draw.text((x, y), text, fill='#006089', font=font)
-        img.save(path, 'PNG')
-        return True
+        draw.text((x, y), "MS", fill='#006089', font=font)
+        img.save(icon_src, 'PNG')
+        print(f"Generated fallback MS icon at {icon_src}")
     except Exception as e:
         print(f"Error generating icon: {e}")
-        return False
 
-# Generate the app icon if missing
-icon_path = os.path.join(BASE_DIR, "zdjecia", "icon.png")
-generate_ms_icon(icon_path)
+# Open icon_192.png and create 512x512 version
+img_pil = Image.open(icon_src)
+if img_pil.size != (192, 192):
+    img_pil = img_pil.resize((192, 192), Image.LANCZOS)
+    img_pil.save(icon_src, 'PNG')
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 2. PWA SETUP & FAVICON
-# ══════════════════════════════════════════════════════════════════════════════
+# Save 512x512 version for manifest
+img_512 = img_pil.resize((512, 512), Image.LANCZOS)
+img_512.save(icon_512_path, 'PNG')
 
-# Load icon as base64 for inline injection (bypasses favicon cache)
-with open(icon_path, "rb") as f:
-    icon_bytes = f.read()
-    ICON_B64 = base64.b64encode(icon_bytes).decode()
+# Also save a copy to zdjecia/icon.png for st.set_page_config
+img_pil.save(icon_fav_path, 'PNG')
+
+# Load icon bytes and base64
+with open(icon_src, "rb") as f:
+    icon_bytes_192 = f.read()
+    ICON_B64 = base64.b64encode(icon_bytes_192).decode()
+with open(icon_512_path, "rb") as f:
+    icon_bytes_512 = f.read()
+    ICON_B64_512 = base64.b64encode(icon_bytes_512).decode()
 
 # Initialize Streamlit Page Config
 st.set_page_config(
@@ -93,7 +112,7 @@ PWA_MANIFEST = {
     "theme_color": "#006089",
     "icons": [
         {"src": f"data:image/png;base64,{ICON_B64}", "sizes": "192x192", "type": "image/png"},
-        {"src": f"data:image/png;base64,{ICON_B64}", "sizes": "512x512", "type": "image/png"}
+        {"src": f"data:image/png;base64,{ICON_B64_512}", "sizes": "512x512", "type": "image/png"}
     ]
 }
 
@@ -177,10 +196,10 @@ def inject_pwa_routes():
             for route_path, content_type, content in [
                 ("/sw.js", "application/javascript", PWA_SW_JS),
                 ("/manifest.json", "application/json", json.dumps(PWA_MANIFEST)),
-                ("/favicon.png", "image/png", icon_bytes),
-                ("/favicon.ico", "image/x-icon", icon_bytes),
-                ("/apple-touch-icon.png", "image/png", icon_bytes),
-                ("/apple-touch-icon-precomposed.png", "image/png", icon_bytes),
+                ("/favicon.png", "image/png", icon_bytes_192),
+                ("/favicon.ico", "image/x-icon", icon_bytes_192),
+                ("/apple-touch-icon.png", "image/png", icon_bytes_192),
+                ("/apple-touch-icon-precomposed.png", "image/png", icon_bytes_192),
             ]:
                 if route_path not in existing:
                     @app.route(route_path)
