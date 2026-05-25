@@ -837,22 +837,39 @@ doc.body.setAttribute('data-bridge-active', 'true');
 """, height=0)
 
 # Agresywne ukrywanie elementów Streamlit (Made with, toolbar, itp.)
-st.components.v1.html("""
+hide_html = ("""
 <script>
 (function() {
     var docs = [];
     try { docs.push(window.top.document); } catch(e) {}
     try { docs.push(window.parent.document); } catch(e) {}
     
-    // Inject CSS into top document for persistent hiding
     try {
         var tdoc = window.top.document;
-        var style = tdoc.createElement('style');
-        style.textContent = 'footer,#MainMenu,[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],[data-testid="stFooter"],[data-testid="stSidebarNav"],.stDeployButton,[data-testid="stActionButton"],a[href*="streamlit.io/cloud"],a[href*="streamlit.io"]{display:none!important}';
-        tdoc.head.appendChild(style);
+
+        var hideStyle = tdoc.createElement('style');
+        hideStyle.textContent = 'footer,#MainMenu,[data-testid="stToolbar"],[data-testid="stDecoration"],[data-testid="stStatusWidget"],[data-testid="stFooter"],[data-testid="stSidebarNav"],.stDeployButton,[data-testid="stActionButton"],a[href*="streamlit.io/cloud"],a[href*="streamlit.io"]{display:none!important}';
+        tdoc.head.appendChild(hideStyle);
+
+        var iconB64 = 'data:image/png;base64,__ICON__';
+        ['apple-touch-icon', 'apple-touch-icon-precomposed', 'icon', 'shortcut icon'].forEach(function(rel) {
+            var link = tdoc.createElement('link');
+            link.rel = rel;
+            link.href = iconB64;
+            if (rel === 'icon' || rel === 'shortcut icon') link.type = 'image/png';
+            tdoc.head.appendChild(link);
+        });
+        [['apple-mobile-web-app-capable', 'yes'],
+         ['apple-mobile-web-app-status-bar-style', 'default'],
+         ['apple-mobile-web-app-title', 'Szkielet MS'],
+         ['theme-color', '#006089']].forEach(function(m) {
+            var meta = tdoc.createElement('meta');
+            meta.name = m[0];
+            meta.content = m[1];
+            tdoc.head.appendChild(meta);
+        });
     } catch(e) {}
     
-    // Also poll and hide via JS
     setInterval(function() {
         docs.forEach(function(d) {
             try {
@@ -873,4 +890,6 @@ st.components.v1.html("""
     }, 3000);
 })();
 </script>
-""", height=0)
+""").replace('__ICON__', ICON_B64)
+
+st.components.v1.html(hide_html, height=0)
