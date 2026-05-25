@@ -630,12 +630,8 @@ if "selected_category" not in st.session_state:
 # 5. ACTION PROCESSOR
 # ══════════════════════════════════════════════════════════════════════════════
 
-# Obsługa nawigacji przez query params (dla linków w iOS barze)
+# Obsługa nawigacji przez query params (tylko dla linków zewnętrznych)
 qp = st.query_params
-if qp.get("menu") == "toggle":
-    st.session_state.mobile_menu = not st.session_state.mobile_menu
-    st.query_params.clear()
-    st.rerun()
 for pg in ["home", "form", "settings"]:
     if qp.get("nav") == pg:
         st.session_state.page = pg
@@ -679,39 +675,151 @@ ios_hbg_open = "open" if st.session_state.mobile_menu else ""
 st.markdown(f"""
 <div class="ios-top-bar-wrapper">
   <div class="ios-nav-bar">
-    <div class="ios-hamburger {ios_hbg_open}">
-      <a href="?menu=toggle" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;text-decoration:none;">
+    <div class="ios-hamburger {ios_hbg_open}" id="hamburger-btn">
       <span class="hbr"></span><span class="hbr"></span><span class="hbr"></span>
-      </a>
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v6</div>
+      <div class="ios-nav-subtitle">{today_label} · v7</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Rozwijane menu mobilne
+# Hamburger button (niewidzialny, nałożony na iOS bar przez CSS)
 st.markdown("""
 <style>
+/* Ukryj domyślny wygląd przycisku hamburgera */
+.st-key-btn_hamburger {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 10001 !important;
+    width: 50px !important;
+    height: calc(56px + env(safe-area-inset-top, 0px)) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.st-key-btn_hamburger button {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    cursor: pointer !important;
+    color: transparent !important;
+    font-size: 0 !important;
+}
+.st-key-btn_hamburger button:hover {
+    background: rgba(0, 96, 137, 0.05) !important;
+}
+.st-key-btn_hamburger button:active {
+    background: rgba(0, 96, 137, 0.1) !important;
+}
+.st-key-btn_hamburger button p {
+    display: none !important;
+}
+/* Na desktopie ukryj hamburger i mobilne elementy */
 @media (min-width: 1001px) {
-    .st-key-mob_home, .st-key-mob_form, .st-key-mob_settings { display: none !important; }
+    .st-key-btn_hamburger { display: none !important; }
+    .mobile-menu-dropdown { display: none !important; }
+}
+/* Animowane menu mobilne */
+.mobile-menu-dropdown {
+    position: fixed !important;
+    top: calc(56px + env(safe-area-inset-top, 0px)) !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9998 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(0, 96, 137, 0.15) !important;
+    padding: 12px 16px 16px 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    transform: translateY(-10px) !important;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.25s ease,
+                transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+.mobile-menu-dropdown.show {
+    max-height: 300px !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+.mobile-menu-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 14px 18px !important;
+    background: rgba(0, 0, 0, 0.02) !important;
+    border-radius: 14px !important;
+    color: #1B2B3A !important;
+    text-decoration: none !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
+    border: 1px solid rgba(0, 0, 0, 0.04) !important;
+    cursor: pointer !important;
+}
+.mobile-menu-item:hover {
+    background: rgba(0, 96, 137, 0.06) !important;
+    color: #006089 !important;
+}
+.mobile-menu-item:active {
+    background: rgba(0, 96, 137, 0.12) !important;
+}
+.mobile-menu-item.active {
+    background: rgba(0, 96, 137, 0.08) !important;
+    color: #006089 !important;
+    border-color: rgba(0, 96, 137, 0.2) !important;
+}
+.mobile-menu-item-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    height: 20px !important;
+    color: #6B7B8D !important;
+}
+.mobile-menu-item.active .mobile-menu-item-icon {
+    color: #006089 !important;
+}
+.mobile-menu-item-arrow {
+    margin-left: auto !important;
+    color: #aaa !important;
+    font-size: 12px !important;
 }
 </style>
 """, unsafe_allow_html=True)
-if st.session_state.mobile_menu:
-    col_m1, col_m2, col_m3 = st.columns(3)
-    with col_m1:
-        if st.button("🏠 Główna", key="mob_home", use_container_width=True):
-            st.session_state.page = "home"; st.session_state.mobile_menu = False; st.rerun()
-    with col_m2:
-        if st.button("📋 Formularz", key="mob_form", use_container_width=True):
-            st.session_state.page = "form"; st.session_state.mobile_menu = False; st.rerun()
-    with col_m3:
-        if st.button("⚙️ Ustawienia", key="mob_settings", use_container_width=True):
-            st.session_state.page = "settings"; st.session_state.mobile_menu = False; st.rerun()
+
+# Niewidzialny przycisk hamburgera
+if st.button("toggle_hamburger", key="btn_hamburger"):
+    st.session_state.mobile_menu = not st.session_state.mobile_menu
+    st.rerun()
+
+# Animowane menu mobilne
+menu_class = "mobile-menu-dropdown show" if st.session_state.mobile_menu else "mobile-menu-dropdown"
+menu_items = [
+    ("home", "Strona Główna", SVG_HOME),
+    ("form", "Formularz", SVG_ADD_DATA),
+    ("settings", "Ustawienia", SVG_SETTINGS),
+]
+menu_html = f'<div class="{menu_class}" id="mobile-menu">'
+for pg, label, svg in menu_items:
+    active_class = "active" if st.session_state.page == pg else ""
+    menu_html += f'<div class="mobile-menu-item {active_class}" data-page="{pg}"><span class="mobile-menu-item-icon">{svg}</span>{label}<span class="mobile-menu-item-arrow">›</span></div>'
+menu_html += '</div>'
+st.markdown(menu_html, unsafe_allow_html=True)
 
 # Dolny pasek iOS (wizualny)
 page_names = {"home": "HOME", "form": "FORM", "settings": "USTAW"}
@@ -734,7 +842,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v6</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v7</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -809,7 +917,7 @@ with col_main:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 7. JS BRIDGE — tylko sendActionToStreamlit
+# 7. JS BRIDGE — sendActionToStreamlit + obsługa menu mobilnego
 # ══════════════════════════════════════════════════════════════════════════════
 st.components.v1.html("""<script>
 window.parent.sendActionToStreamlit = function(s) {
@@ -820,6 +928,28 @@ window.parent.sendActionToStreamlit = function(s) {
         i.dispatchEvent(new window.parent.Event('input', { bubbles: true }));
     }
 };
+
+// Obsługa kliknięć w elementy menu mobilnego
+(function() {
+    var pdoc = window.parent.document;
+    function attachMenuHandlers() {
+        var items = pdoc.querySelectorAll('.mobile-menu-item');
+        items.forEach(function(item) {
+            if (!item.dataset.listenerAttached) {
+                item.dataset.listenerAttached = '1';
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var pg = item.getAttribute('data-page');
+                    if (pg) {
+                        window.parent.sendActionToStreamlit('action=nav&page=' + pg);
+                    }
+                });
+            }
+        });
+    }
+    attachMenuHandlers();
+    setInterval(attachMenuHandlers, 1000);
+})();
 </script>""", height=0)
 
 # Agresywne ukrywanie elementów Streamlit (Made with, toolbar, itp.)
