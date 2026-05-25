@@ -748,7 +748,8 @@ if st.session_state.page == "home":
         </div>
         """, unsafe_allow_html=True)
         
-    elif st.session_state.page == "form":
+        
+elif st.session_state.page == "form":
         st.markdown(f'<div class="header-section"><div class="page-title">{SVG_ADD_DATA} Formularz</div></div>', unsafe_allow_html=True)
         
         col_a, col_b = st.columns(2)
@@ -769,7 +770,7 @@ if st.session_state.page == "home":
             if st.button("ZAPISZ", key="btn_save", type="primary", use_container_width=True):
                 st.success("Przykładowy zapis — dane do podpięcia w przyszłości.")
         
-    elif st.session_state.page == "settings":
+elif st.session_state.page == "settings":
         st.markdown(f'<div class="header-section"><div class="page-title">{SVG_SETTINGS} Ustawienia</div></div>', unsafe_allow_html=True)
         st.markdown("""
         <div class="content-card">
