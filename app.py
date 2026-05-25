@@ -4,6 +4,7 @@ import base64
 import os
 import json
 import urllib.parse
+from PIL import Image
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. INITIALIZATION & UTILITIES
@@ -59,17 +60,23 @@ if not os.path.exists(icon_src):
         print(f"Error generating icon: {e}")
 
 # Open icon_192.png and create 512x512 version
-img_pil = Image.open(icon_src)
-if img_pil.size != (192, 192):
-    img_pil = img_pil.resize((192, 192), Image.LANCZOS)
-    img_pil.save(icon_src, 'PNG')
+try:
+    img_pil = Image.open(icon_src)
+    if img_pil.size != (192, 192):
+        img_pil = img_pil.resize((192, 192), Image.LANCZOS)
+        img_pil.save(icon_src, 'PNG')
 
-# Save 512x512 version for manifest
-img_512 = img_pil.resize((512, 512), Image.LANCZOS)
-img_512.save(icon_512_path, 'PNG')
+    img_512 = img_pil.resize((512, 512), Image.LANCZOS)
+    img_512.save(icon_512_path, 'PNG')
 
-# Also save a copy to zdjecia/icon.png for st.set_page_config
-img_pil.save(icon_fav_path, 'PNG')
+    img_pil.save(icon_fav_path, 'PNG')
+except Exception as e:
+    print(f"Icon processing error: {e}")
+    # Last resort: create blank icon
+    img = Image.new('RGBA', (192, 192), (0, 0, 0, 0))
+    img.save(icon_fav_path, 'PNG')
+    img.resize((512, 512), Image.LANCZOS).save(icon_512_path, 'PNG')
+    img.save(icon_src, 'PNG')
 
 # Load icon bytes and base64
 with open(icon_src, "rb") as f:
