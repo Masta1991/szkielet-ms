@@ -687,7 +687,7 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label}</div>
+      <div class="ios-nav-subtitle">{today_label} · v1</div>
     </div>
     <div class="ios-avatar" data-action="action=nav&page=settings">MS</div>
   </div>
@@ -737,7 +737,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label}</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v1</div>
         </div>
     </div>
     """
