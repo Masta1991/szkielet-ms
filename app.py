@@ -197,9 +197,10 @@ inject_pwa_routes()
 # ══════════════════════════════════════════════════════════════════════════════
 def inject_custom_css():
     st.markdown("""
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-
     html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMainViewContainer"], [data-testid="stHeader"] {
         background: #F2F7FA !important;
         background-color: #F2F7FA !important;
@@ -215,8 +216,11 @@ def inject_custom_css():
     [data-testid="stDecoration"] { display: none !important; }
     [data-testid="stStatusWidget"] { display: none !important; }
     [data-testid="stFooter"] { display: none !important; }
+    [data-testid="stSidebarNav"] { display: none !important; }
     .stDeployButton { display: none !important; }
-    [data-testid="stAppViewContainer"] > div:last-child { display: none !important; }
+    div:has(> a[href*="streamlit.io/cloud"]) { display: none !important; }
+    a[href*="streamlit.io/cloud"] { display: none !important; }
+    [data-testid="stActionButton"] { display: none !important; }
 
     .block-container {
         padding-top: 1.5rem !important;
@@ -842,16 +846,34 @@ st.components.v1.html("""
         var selectors = [
             'footer', '#MainMenu', '[data-testid="stToolbar"]',
             '[data-testid="stDecoration"]', '[data-testid="stStatusWidget"]',
-            '[data-testid="stFooter"]', '.stDeployButton',
-            '[data-testid="stSidebarNav"]', '[data-testid="StyledAppLink"]'
+            '[data-testid="stFooter"]', '[data-testid="stSidebarNav"]',
+            '.stDeployButton', '[data-testid="stActionButton"]',
+            'a[href*="streamlit.io/cloud"]'
         ];
         selectors.forEach(function(sel) {
             try {
                 pdoc.querySelectorAll(sel).forEach(function(el) {
                     el.style.setProperty('display', 'none', 'important');
+                    el.style.setProperty('visibility', 'hidden', 'important');
+                    el.style.setProperty('height', '0px', 'important');
+                    el.style.setProperty('width', '0px', 'important');
+                    el.style.setProperty('opacity', '0', 'important');
                 });
             } catch(e) {}
         });
+        // Walk through all divs to find "Hosted with" text
+        try {
+            pdoc.querySelectorAll('div, a, span').forEach(function(el) {
+                var txt = (el.innerText || el.textContent || '').trim();
+                if (txt.indexOf('Hosted with') >= 0 || txt.indexOf('Made with') >= 0) {
+                    var p = el;
+                    while (p) {
+                        p.style.setProperty('display', 'none', 'important');
+                        p = p.parentElement;
+                    }
+                }
+            });
+        } catch(e) {}
     };
     hideStreamlit();
     setInterval(hideStreamlit, 2000);
