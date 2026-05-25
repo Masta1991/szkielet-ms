@@ -666,40 +666,44 @@ ios_hbg_open = "open" if st.session_state.mobile_menu else ""
 st.markdown(f"""
 <div class="ios-top-bar-wrapper">
   <div class="ios-nav-bar">
-    <div class="ios-hamburger {ios_hbg_open}">
+    <div class="ios-hamburger" style="visibility:hidden;">
       <span class="hbr"></span><span class="hbr"></span><span class="hbr"></span>
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v3</div>
+      <div class="ios-nav-subtitle">{today_label} · v4</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Hamburger + nawigacja mobilna (tylko mobile)
+# Hamburger mobilny — tylko ☰/✕, reszta nawigacji w menu
 st.markdown("""
 <style>
+/* Hamburger w iOS bar */
+div[data-testid="stVerticalBlock"]:has(button[key="btn_hamburger"]) {
+    position: fixed !important; top: calc(8px + env(safe-area-inset-top, 0px)) !important;
+    left: 8px !important; z-index: 10000 !important; margin: 0 !important; padding: 0 !important;
+}
+button[key="btn_hamburger"] {
+    width: 38px !important; height: 38px !important; border-radius: 50% !important;
+    background: rgba(0,0,0,0.04) !important; border: 1px solid rgba(0,0,0,0.06) !important;
+    font-size: 16px !important; padding: 0 !important; min-width: 38px !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+}
+/* Ukryj nawigację na desktop */
 @media (min-width: 1001px) {
-    .st-key-btn_hamburger, .st-key-nav_home, .st-key-nav_form, .st-key-nav_settings,
-    .st-key-mob_home, .st-key-mob_form, .st-key-mob_settings { display: none !important; }
+    button[key="btn_hamburger"], .st-key-mob_home, .st-key-mob_form, .st-key-mob_settings { display: none !important; }
+    div[data-testid="stVerticalBlock"]:has(button[key="btn_hamburger"]) { display: none !important; }
 }
 </style>
 """, unsafe_allow_html=True)
-col_hbg, col_n1, col_n2, col_n3 = st.columns([0.8, 1, 1, 1.2])
+
+col_hbg, _, _, _ = st.columns([0.1, 1, 1, 1])
 with col_hbg:
     if st.button("✕" if st.session_state.mobile_menu else "☰", key="btn_hamburger"):
         st.session_state.mobile_menu = not st.session_state.mobile_menu; st.rerun()
-with col_n1:
-    if st.button("🏠 Home", key="nav_home", use_container_width=True):
-        st.session_state.page = "home"; st.session_state.mobile_menu = False; st.rerun()
-with col_n2:
-    if st.button("📋 Formularz", key="nav_form", use_container_width=True):
-        st.session_state.page = "form"; st.session_state.mobile_menu = False; st.rerun()
-with col_n3:
-    if st.button("⚙️ Ustawienia", key="nav_settings", use_container_width=True):
-        st.session_state.page = "settings"; st.session_state.mobile_menu = False; st.rerun()
 
 # Rozwijane menu mobilne
 if st.session_state.mobile_menu:
@@ -735,7 +739,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v3</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v4</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
