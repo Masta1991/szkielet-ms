@@ -671,14 +671,22 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v2</div>
+      <div class="ios-nav-subtitle">{today_label} · v3</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Hamburger + nawigacja (st.button — 100% niezawodne)
+# Hamburger + nawigacja mobilna (tylko mobile)
+st.markdown("""
+<style>
+@media (min-width: 1001px) {
+    .st-key-btn_hamburger, .st-key-nav_home, .st-key-nav_form, .st-key-nav_settings,
+    .st-key-mob_home, .st-key-mob_form, .st-key-mob_settings { display: none !important; }
+}
+</style>
+""", unsafe_allow_html=True)
 col_hbg, col_n1, col_n2, col_n3 = st.columns([0.8, 1, 1, 1.2])
 with col_hbg:
     if st.button("✕" if st.session_state.mobile_menu else "☰", key="btn_hamburger"):
@@ -727,7 +735,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v2</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v3</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
