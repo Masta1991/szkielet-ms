@@ -29,7 +29,7 @@ ICON_DIR = os.path.join(BASE_DIR, "App Icon")
 if not os.path.exists(ICON_DIR):
     os.makedirs(ICON_DIR, exist_ok=True)
 
-icon_src = os.path.join(ICON_DIR, "icon_192.png")
+icon_src = os.path.join(ICON_DIR, "szkielet.png")
 icon_512_path = os.path.join(ICON_DIR, "icon_512.png")
 icon_fav_path = os.path.join(BASE_DIR, "zdjecia", "icon.png")
 
