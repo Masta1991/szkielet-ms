@@ -653,104 +653,75 @@ if js_data and js_data != st.session_state.last_js_data:
     except Exception as e:
         print(f"Action error: {e}")
 
-# Helper for rendering Bento Menu Tiles on Desktop
-def render_bento_tile(label, title, desc, page_name, icon_svg):
-    is_active = st.session_state.page == page_name
-    active_border = "border-color: #006089; background: #f0f7fa;" if is_active else ""
-    tile_html = f"""
-    <div class="tile-link" style="{active_border}" data-action="action=nav&page={page_name}">
-        <div class="tile-bg-icon-container">{icon_svg}</div>
-        <div class="tile-content">
-            <div class="tile-label">{label}</div>
-            <div class="tile-title">{title}</div>
-            <div class="tile-desc">{desc}</div>
-        </div>
-    </div>
-    """
-    st.markdown(tile_html, unsafe_allow_html=True)
-
 # ══════════════════════════════════════════════════════════════════════════════
-# 6. HEADER & MOBILE BARS GENERATION
+# 5. ACTION PROCESSOR
+# ══════════════════════════════════════════════════════════════════════════════
+# 6. HEADER & MOBILE BARS + NAWIGACJA
 # ══════════════════════════════════════════════════════════════════════════════
 
 today_label = datetime.date.today().strftime("%d.%m.%Y")
-week_num = datetime.date.today().isocalendar()[1]
 ios_hbg_open = "open" if st.session_state.mobile_menu else ""
 
+# iOS Top Bar (wizualny)
 st.markdown(f"""
 <div class="ios-top-bar-wrapper">
   <div class="ios-nav-bar">
-    <div class="ios-hamburger {ios_hbg_open}" data-action="action=toggle_menu">
-      <span class="hbr"></span>
-      <span class="hbr"></span>
-      <span class="hbr"></span>
+    <div class="ios-hamburger {ios_hbg_open}">
+      <span class="hbr"></span><span class="hbr"></span><span class="hbr"></span>
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v1</div>
+      <div class="ios-nav-subtitle">{today_label} · v2</div>
     </div>
-    <div class="ios-avatar" data-action="action=nav&page=settings">MS</div>
-  </div>
-</div>
-
-<div class="ios-bottom-bar-wrapper">
-  <div class="ios-action-btn {"active" if st.session_state.page == "home" else ""}" data-action="action=nav&page=home">
-    <span class="ios-action-icon">{SVG_HOME}</span>
-    <span class="ios-action-text">HOME</span>
-  </div>
-  <div class="ios-action-btn {"active" if st.session_state.page == "form" else ""}" data-action="action=nav&page=form">
-    <span class="ios-action-icon">{SVG_ADD_DATA}</span>
-    <span class="ios-action-text">FORMULARZ</span>
-  </div>
-  <div class="ios-action-btn {"active" if st.session_state.page == "settings" else ""}" data-action="action=nav&page=settings">
-    <span class="ios-action-icon">{SVG_SETTINGS}</span>
-    <span class="ios-action-text">USTAWIENIA</span>
+    <div class="ios-avatar">MS</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
+# Hamburger + nawigacja (st.button — 100% niezawodne)
+col_hbg, col_n1, col_n2, col_n3 = st.columns([0.8, 1, 1, 1.2])
+with col_hbg:
+    if st.button("✕" if st.session_state.mobile_menu else "☰", key="btn_hamburger"):
+        st.session_state.mobile_menu = not st.session_state.mobile_menu; st.rerun()
+with col_n1:
+    if st.button("🏠 Home", key="nav_home", use_container_width=True):
+        st.session_state.page = "home"; st.session_state.mobile_menu = False; st.rerun()
+with col_n2:
+    if st.button("📋 Formularz", key="nav_form", use_container_width=True):
+        st.session_state.page = "form"; st.session_state.mobile_menu = False; st.rerun()
+with col_n3:
+    if st.button("⚙️ Ustawienia", key="nav_settings", use_container_width=True):
+        st.session_state.page = "settings"; st.session_state.mobile_menu = False; st.rerun()
+
+# Rozwijane menu mobilne
 if st.session_state.mobile_menu:
-    st.markdown(f"""
-    <div class="mobile-nav-dropdown">
-        <a class="mobile-nav-item" data-action="action=nav&page=home">
-            <span><span class="mobile-nav-item-icon">{SVG_HOME}</span> STRONA GŁÓWNA</span>
-            <span class="mobile-nav-item-arrow">›</span>
-        </a>
-        <a class="mobile-nav-item" data-action="action=nav&page=form">
-            <span><span class="mobile-nav-item-icon">{SVG_ADD_DATA}</span> FORMULARZ</span>
-            <span class="mobile-nav-item-arrow">›</span>
-        </a>
-        <a class="mobile-nav-item" data-action="action=nav&page=settings">
-            <span><span class="mobile-nav-item-icon">{SVG_SETTINGS}</span> USTAWIENIA</span>
-            <span class="mobile-nav-item-arrow">›</span>
-        </a>
-        <div style="text-align: center; color: #6B7B8D; font-size: 11px; padding: 15px 0 5px 0; border-top: 1px solid rgba(0,0,0,0.05); margin-top: 10px;">Szkielet MS v1.0</div>
-    </div>
-    """, unsafe_allow_html=True)
+    col_m1, col_m2, col_m3 = st.columns(3)
+    with col_m1:
+        if st.button("🏠 Główna", key="mob_home", use_container_width=True):
+            st.session_state.page = "home"; st.session_state.mobile_menu = False; st.rerun()
+    with col_m2:
+        if st.button("📋 Formularz", key="mob_form", use_container_width=True):
+            st.session_state.page = "form"; st.session_state.mobile_menu = False; st.rerun()
+    with col_m3:
+        if st.button("⚙️ Ustawienia", key="mob_settings", use_container_width=True):
+            st.session_state.page = "settings"; st.session_state.mobile_menu = False; st.rerun()
 
-st.markdown('<div class="main-layout">', unsafe_allow_html=True)
-col_side, col_main = st.columns([1, 4])
+# Dolny pasek iOS (wizualny)
+page_names = {"home": "HOME", "form": "FORM", "settings": "USTAW"}
+page_icons = {"home": SVG_HOME, "form": SVG_ADD_DATA, "settings": SVG_SETTINGS}
+bottom_items = "".join(
+    f'<div class="ios-action-btn {"active" if st.session_state.page==pg else ""}">'
+    f'<span class="ios-action-icon">{page_icons[pg]}</span>'
+    f'<span class="ios-action-text">{page_names[pg]}</span></div>'
+    for pg in ["home", "form", "settings"]
+)
+st.markdown(f'<div class="ios-bottom-bar-wrapper">{bottom_items}</div>', unsafe_allow_html=True)
 
-with col_side:
-    control_panel_html = f"""
-    <div class="control-panel-card desktop-only">
-        <div>
-            <div class="tile-label">PANEL DOWODZENIA</div>
-            <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v1</div>
-        </div>
-    </div>
-    """
-    st.markdown(control_panel_html, unsafe_allow_html=True)
-    
-    st.markdown('<div class="mobile-sidebar-content">', unsafe_allow_html=True)
-    render_bento_tile("START", "Strona Główna", "Widok startowy aplikacji", "home", SVG_HOME)
-    render_bento_tile("DANE", "Formularz", "Przykładowy formularz", "form", SVG_ADD_DATA)
-    render_bento_tile("KONFIGURACJA", "Ustawienia", "Konfiguracja szkieletu", "settings", SVG_SETTINGS)
-    st.markdown('</div>', unsafe_allow_html=True)
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE ROUTING
+# ══════════════════════════════════════════════════════════════════════════════
 
-with col_main:
-    if st.session_state.page == "home":
+if st.session_state.page == "home":
         st.markdown(f'<div class="header-section"><div class="page-title">{SVG_HOME} Strona Główna</div></div>', unsafe_allow_html=True)
         
         st.markdown("""
@@ -807,58 +778,20 @@ with col_main:
         </div>
         """, unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 7. JS BRIDGE / EVENT LISTENERS
+# 7. JS BRIDGE — tylko sendActionToStreamlit
 # ══════════════════════════════════════════════════════════════════════════════
-st.components.v1.html(f"""
-<script>
-// Action Bridge: focus hidden input and dispatch change event back to Streamlit
-window.parent.sendActionToStreamlit = function(actionStr) {{
-    const parentWin = window.parent;
-    const parentDoc = parentWin.document;
-    const inputs = parentDoc.querySelectorAll('input');
-    let target = null;
-    inputs.forEach(i => {{ if(i.getAttribute('aria-label') === 'js_data_exchange') target = i; }});
-    if(target) {{
-        target.focus();
-        const setter = Object.getOwnPropertyDescriptor(parentWin.HTMLInputElement.prototype, 'value').set;
-        setter.call(target, actionStr + '&ts=' + Date.now());
-        target.dispatchEvent(new parentWin.Event('input', {{ bubbles: true }}));
-        target.dispatchEvent(new parentWin.Event('change', {{ bubbles: true }}));
-        target.blur();
-    }}
-}};
-
-// Click Handler: listen to clicks on data-action attribute
-const doc = document;
-window.parent.trainerClickHandler = (e) => {{
-    let el = e.target;
-    while (el && el !== doc.body) {{
-        if (el.hasAttribute('data-action')) {{
-            e.preventDefault();
-            e.stopPropagation();
-            let actionStr = el.getAttribute('data-action');
-            if (window.parent.sendActionToStreamlit) {{
-                window.parent.sendActionToStreamlit(actionStr);
-            }}
-            return;
-        }}
-        el = el.parentElement;
-    }}
-}};
-
-// Clean up stale listener and bind click handler to window frame
-if (window.parent.trainerClickHandlerBound) {{
-    doc.body.removeEventListener('click', window.parent.trainerClickHandler);
-}}
-doc.body.addEventListener('click', window.parent.trainerClickHandler);
-window.parent.trainerClickHandlerBound = true;
-
-// Diagnostic flag
-doc.body.setAttribute('data-bridge-active', 'true');
-</script>
+st.components.v1.html("""<script>
+window.parent.sendActionToStreamlit = function(s) {
+    var i = window.parent.document.querySelector('input[aria-label="js_data_exchange"]');
+    if (i) {
+        var setter = Object.getOwnPropertyDescriptor(window.parent.HTMLInputElement.prototype, 'value').set;
+        setter.call(i, s + '&ts=' + Date.now());
+        i.dispatchEvent(new window.parent.Event('input', { bubbles: true }));
+    }
+};
+</script>""", height=0)
 """, height=0)
 
 # Agresywne ukrywanie elementów Streamlit (Made with, toolbar, itp.)
