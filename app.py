@@ -404,6 +404,7 @@ def inject_custom_css():
         flex-shrink: 0;
         transition: background 0.2s ease;
         border: 1px solid rgba(0,0,0,0.06);
+        pointer-events: none;
     }
     .ios-hamburger:active { background: rgba(0, 96, 137, 0.1); }
     .ios-hamburger span {
@@ -680,7 +681,7 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v9</div>
+      <div class="ios-nav-subtitle">{today_label} · v10</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
@@ -856,7 +857,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v9</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v10</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
