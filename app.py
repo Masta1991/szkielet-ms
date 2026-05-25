@@ -559,17 +559,17 @@ def inject_custom_css():
 
         .block-container {
             padding-top: 0px !important;
-            margin-top: -120px !important;
+            margin-top: -80px !important;
             padding-left: 10px !important;
             padding-right: 10px !important;
         }
         [data-testid="stMainViewContainer"] {
             padding-top: 0px !important;
-            margin-top: -100px !important;
+            margin-top: -60px !important;
         }
         main {
             padding-top: 0px !important;
-            margin-top: -80px !important;
+            margin-top: -40px !important;
         }
         header[data-testid="stHeader"] { display: none !important; }
 
@@ -691,7 +691,7 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v22</div>
+      <div class="ios-nav-subtitle">{today_label} · v23</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
@@ -817,7 +817,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v22</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v23</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
