@@ -691,7 +691,7 @@ st.markdown(f"""
     </div>
     <div class="ios-nav-center">
       <div class="ios-nav-title">Szkielet MS</div>
-      <div class="ios-nav-subtitle">{today_label} · v23</div>
+      <div class="ios-nav-subtitle">{today_label} · v24</div>
     </div>
     <div class="ios-avatar">MS</div>
   </div>
@@ -800,7 +800,7 @@ st.markdown(menu_html, unsafe_allow_html=True)
 page_names = {"home": "HOME", "form": "FORM", "settings": "USTAW"}
 page_icons = {"home": SVG_HOME, "form": SVG_ADD_DATA, "settings": SVG_SETTINGS}
 bottom_items = "".join(
-    f'<div class="ios-action-btn {"active" if st.session_state.page==pg else ""}">'
+    f'<div class="ios-action-btn {"active" if st.session_state.page==pg else ""}" data-action="action=nav&page={pg}">'
     f'<span class="ios-action-icon">{page_icons[pg]}</span>'
     f'<span class="ios-action-text">{page_names[pg]}</span></div>'
     for pg in ["home", "form", "settings"]
@@ -817,7 +817,7 @@ with col_side:
         <div>
             <div class="tile-label">PANEL DOWODZENIA</div>
             <div style="font-size: 22px; font-weight: 800; color: #1B2B3A; margin-top: 10px;">Witaj, MS!</div>
-            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v23</div>
+            <div style="font-size: 13px; color: #6B7B8D; margin-top: 5px;">{today_label} · v24</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
